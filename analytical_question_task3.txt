@@ -1,0 +1,23 @@
+Analytical Question A: Your churn class is a minority class. Using your own numbers, explain why 
+accuracy alone would flatter this model, and what your recall figure tells the CFO about at-risk 
+customers your model would fail to flag. 
+
+Why accuracy alone is misleading
+In this churn dataset, the positive class (customers who churn) is the minority class:
+
+Churn rate = 26.54%
+Non-churn rate = 73.46%
+That means a model can achieve a high accuracy simply by predicting “No Churn” most of the time. For example, if the model is correct on most non-churn customers but misses many churners, its overall accuracy can still look strong even though it is not useful for retention planning. Accuracy treats all errors equally, but in churn prediction the important error is missing actual churners.
+
+The model’s test-set metrics were:
+
+Accuracy = 0.7977
+Recall = 0.5428
+This recall means the model correctly identifies only about 54.28% of the customers who actually churn. In practical CFO terms, it would miss roughly 45.72% of at-risk customers—so a large share of churners would not be flagged in time for intervention. That is why accuracy alone flatters the model: it can look “good” while leaving many high-risk customers unaddressed.
+
+In business terms, the cost of missing churners is usually much higher than the cost of false alarms, so recall is the more important metric for a retention strategy.
+
+Analytical Question B: Compare your training-set accuracy to your test-set accuracy for the complex model. If there is a large gap, what does that tell you about trust — could you defend this model's predictions to the board as-is, or would you simplify it first? If there is little gap, say so and explain why that increases your confidence.
+
+For the complex logistic-regression model, the training-set accuracy is 0.8026 and the test-set accuracy is 0.7977. The gap is only 0.0049, or about 0.49 percentage points, which is very small. This tells us that the model is generalizing well and is not substantially overfitting the training data. In other words, the model is learning a stable pattern rather than memorizing the training set, which increases confidence in its predictions. I would be comfortable defending this model to the board as a practical baseline, while also noting that recall is still moderate and there is room to improve targeting. Because the train-test gap is narrow, there is no strong reason to simplify it first just to reduce overfitting risk; the current version is reasonably trustworthy for decision support, though additional tuning or a stronger model could still improve the churn detection rate.
+
