@@ -1,0 +1,14 @@
+Analytical Question: Name your top 3 features. For each, write one sentence a retention manager could 
+act on directly (a specific contract change, billing method, or add-on service) — not a vague "improve 
+satisfaction" statement. 
+
+Top 3 churn drivers and action-oriented retention moves
+
+1. Contract_Two Year
+"Move at-risk month-to-month customers onto a 24-month contract with a small monthly discount or waived activation fee before renewal, because this contract type is the strongest protection against churn."
+
+2. InternetService_Fiber Optic
+"For customers on Fiber Optic, offer a proactive retention review at the 6–9 month mark—either a price-protected bundle, a faster fix for service complaints, or a downgrade/upgrade option to a more stable plan before they leave."
+
+3. tenure
+"Set a retention trigger for customers in their first 12 months: call them before the end of the initial term with a loyalty offer, a contract extension, or a retention discount, because churn risk rises sharply as tenure falls."
