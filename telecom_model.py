@@ -23,6 +23,10 @@ if 'Contract' in df.columns:
 if 'InternetService' in df.columns:
     df['InternetService'] = df['InternetService'].astype(str).str.strip()
 
+# Convert data types
+if 'tenure' in df.columns:
+    df['tenure'] = pd.to_numeric(df['tenure'], errors='coerce')
+
 # Overall churn KPI
 overall_churn_rate = df['Churn'].eq('Yes').mean() * 100
 print(f'Overall churn rate: {overall_churn_rate:.2f}%')
@@ -46,3 +50,13 @@ internet_churn = (
 )
 print('\nChurn rate by InternetService type:')
 print(internet_churn.round(2).to_string())
+
+# Tenure vs Churn correlation
+churn_numeric = df['Churn'].map({'Yes': 1, 'No': 0})
+tenure_churn_corr = df['tenure'].corr(churn_numeric)
+print(f'\nCorrelation between tenure and churn: {tenure_churn_corr:.4f}')
+
+avg_tenure_churned = df.loc[churn_numeric == 1, 'tenure'].mean()
+avg_tenure_retained = df.loc[churn_numeric == 0, 'tenure'].mean()
+print(f'Average tenure of churned customers: {avg_tenure_churned:.2f} months')
+print(f'Average tenure of retained customers: {avg_tenure_retained:.2f} months')
