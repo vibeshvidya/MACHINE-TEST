@@ -60,3 +60,8 @@ avg_tenure_churned = df.loc[churn_numeric == 1, 'tenure'].mean()
 avg_tenure_retained = df.loc[churn_numeric == 0, 'tenure'].mean()
 print(f'Average tenure of churned customers: {avg_tenure_churned:.2f} months')
 print(f'Average tenure of retained customers: {avg_tenure_retained:.2f} months')
+
+
+#Part 2: Predictive Modelling & Business Segmentation 
+#Task 2: Clean & Preprocess
+
