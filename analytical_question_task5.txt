@@ -1,0 +1,25 @@
+Analytical Question: Which single segment would you recommend the CFO fund a retention campaign 
+for first, and why — weigh both the churn risk and the revenue at stake, using your own segment 
+averages, not just "the riskiest one."
+
+Recommendation: fund the retention campaign for Segment 2, “New, High-Spend, High-Risk.”
+
+This segment has 1,937 customers, average monthly charges of $83.43, and an average churn risk of 59.37%. Its estimated monthly revenue at risk is:
+
+1,937
+×
+$
+83.43
+×
+0.5937
+≈
+$
+95,944
+1,937×$83.43×0.5937≈$95,944
+
+That is substantially higher than:
+
+Established, High-Spend, Low-Risk: $24,282 at risk
+New, Low-Spend, High-Risk: $15,559 at risk
+Established, Low-Spend, Low-Risk: $1,329 at risk
+Although Segment 4 is also high-risk, its lower monthly spend means less revenue is exposed. Segment 2 combines the strongest churn risk with high customer value, making it the best first investment for a retention campaign.
