@@ -1,0 +1,9 @@
+Analytical Question: Report your overall churn rate and your churn rate by contract type, using your 
+own numbers. Month-to-month customers almost always churn more than annual-contract customers in 
+this data — explain in one paragraph why this is a correlation, not proof that switching everyone to 
+annual contracts would cause the same drop in churn (think about who self-selects into month-to-month 
+in the first place).
+
+Explanation:
+
+This pattern is a correlation, not proof that switching everyone to annual contracts would cause the same drop in churn. Customers who choose month-to-month plans are not random—they tend to be newer, more price-sensitive, less committed, or less satisfied with the service than customers who opt for annual contracts, while annual customers are often more established and more loyal. In other words, contract type is partly a self-selection variable: the people who choose month-to-month likely differ in important ways from those who choose annual plans, so the higher churn in month-to-month contracts may be driven by those underlying differences rather than the contract itself causing churn. To establish causality, we would need to compare otherwise similar customers while controlling for factors like tenure, service type, satisfaction, and customer behavior.
