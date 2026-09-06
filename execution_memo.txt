@@ -37,3 +37,52 @@ Cache the explanation by a versioned, deterministic key made from clause ID, ris
 tenure band, and the three approved feature names, and reuse the cached response for matching
 weekly profiles while retaining the clause ID/text and prompt hash as the citation record;
 this reduces duplicate Gemini calls without weakening the retrieval-grounding guarantee.
+
+## Implementation explanation
+
+### TotalCharges and train/test trust
+
+The raw `TotalCharges` column contained blanks and non-numeric values, so I converted it
+with `pd.to_numeric(errors='coerce')`; invalid entries became missing values instead of
+silently remaining strings. I then filled numeric missing values with the column median,
+which kept those customers usable without letting a few large bills determine the
+replacement value. The logistic-regression model achieved 0.8026 training accuracy and
+0.7977 test accuracy, a gap of only 0.0049, so the similar results do not suggest a large
+overfitting problem; I would still judge the model using recall and ROC AUC as well as
+accuracy because churn is the minority class.
+
+### Why Segment 2 came first
+
+I recommended **New, High-Spend, High-Risk** customers because the decision was based on
+both likelihood and value, not risk alone: 1,937 customers had 59.37% average predicted
+risk and $83.43 average monthly charges, producing about $95,944 of expected monthly
+revenue at risk. The competing New, Low-Spend, High-Risk segment had a lower $37.22
+average monthly charge and about $15,559 at risk, so Segment 2 offers the larger financial
+upside even though both segments deserve retention attention; the trade-off is that a
+campaign may cost more per customer to protect higher-value accounts.
+
+### Retrieval test and compliance impact
+
+The retrieval-free Gemini call was coded to ask for a clause number without supplying the
+playbook text, but it was not executed because `GEMINI_API_KEY` was unavailable; therefore
+there is no exact model response or verified correctness result to report. The intended
+failure mode is an **ungrounded clause-number hallucination**: a confident policy choice
+without the policy source. That matters more here than in casual chat because a wrong
+clause can authorize an inappropriate contract or discount, create inconsistent customer
+treatment, cause financial or regulatory exposure, and leave no defensible evidence that
+the approved retention policy was followed.
+
+### Exact LLM inputs and demographic protection
+
+The grounded call received this system instruction: produce exactly 3 or 4 sentences for a
+retention agent, use only the retrieved playbook clause and supplied feature names, do not
+invent facts or actions, and never mention `gender`, `SeniorCitizen`, `Partner`,
+`Dependents`, or any proxy or implication of them. Its user prompt contained only the
+retrieved clause text, the customer's risk probability, tenure in months, and the three
+filtered top feature names; it did not contain the customer's full row or demographic
+values. The demographic columns were kept out of the LLM prompt in the `forbidden_terms`
+filter, which removes feature names containing those four terms before `top_features` is
+constructed; the system prompt repeats the prohibition as a second control. The model may
+still use those columns internally because `model_features` drops only `Churn` and
+`customerID`, so removing them from the LLM explanation is separate from removing them from
+the predictive model.

@@ -1,0 +1,25 @@
+• Your TotalCharges fix and your train-vs-test accuracy comparison, in your own words. 
+
+TotalCharges and model trust: I converted TotalCharges with pd.to_numeric(errors='coerce'), turning invalid values into missing values, then replaced numeric missing values with the median. Training accuracy was 80.26% and test accuracy was 79.77%, only a 0.49 percentage-point gap, suggesting limited overfitting.
+
+• Why you recommended the segment you did in Task 5 — walk through the trade-off, not just the 
+risk number. 
+
+Task 5 segment choice: I recommended New, High-Spend, High-Risk customers because they combine high churn risk (59.37%) with high average monthly charges ($83.43), creating approximately $95,944 in expected monthly revenue at risk. The New, Low-Spend, High-Risk segment is also risky, but its lower spend creates only about $15,559 in expected monthly exposure, so I prioritized revenue protection rather than risk percentage alone.
+
+• What happened when you skipped retrieval in Task 6, and why that matters more here than in a 
+casual chatbot. 
+
+Task 6 retrieval test: The retrieval-free Gemini call was implemented, but it could not run because GEMINI_API_KEY was unavailable; therefore, no exact hallucinated response or correctness result was fabricated. The risk being tested is ungrounded clause-number hallucination: in a retention/compliance system, an unsupported clause choice could trigger an unauthorized discount or contract, treat customers inconsistently, create financial or regulatory exposure, and leave no defensible audit trail.
+
+
+• Exactly what you passed into the LLM prompt, and where in your code the demographic 
+columns were kept out of it. 
+
+
+LLM prompt and demographic protection: The grounded prompt contained only the retrieved playbook clause, churn-risk probability, tenure in months, and three filtered feature names. The demographic fields were excluded in telecom_model_task6.py, where forbidden_terms = ('gender', 'SeniorCitizen', 'Partner', 'Dependents') filters top_features; the system prompt separately forbids mentioning those fields, their proxies, or implications. The full customer row was never passed to Gemini.
+
+
+
+
+
