@@ -1,0 +1,62 @@
+
+Analytical Question A : Call the LLM again for the same customer, 
+but this time skip your retrieval step and just ask which clause applies, without giving it the playbook 
+text. Record exactly what it says and whether the clause number is correct. Name this failure mode and 
+explain, specifically for a retention/compliance context, why it is worse than a wrong answer in a casual 
+chatbot.
+
+
+Analytical Question A
+
+Customer tested: 5178-LMXOP
+Risk probability: 0.844606
+Tenure: 1 month
+Expected clause: Clause 1 (new, high-risk customer)
+
+Retrieval-free test
+The second Gemini call could not be executed in this environment because GEMINI_API_KEY
+was not configured, so there is no exact model output to report and the clause-number
+correctness is unverified.
+
+Failure mode: ungrounded clause-number hallucination.
+
+The model is being asked to identify a numbered policy clause without being given the
+policy text, so any confident clause number is unsupported by the retrieved source. In a
+retention/compliance workflow, this is more serious than an incorrect answer in a casual
+chatbot because it can trigger an unauthorized contract offer, discount, or service action;
+apply customers inconsistently; create financial and regulatory risk; and leave the company
+unable to demonstrate that the recommendation followed the approved playbook. The
+retrieval-grounded call is therefore the production-safe path, while the retrieval-free
+call is useful only as a documented hallucination test.
+
+
+Analytical Question B
+
+The Part 2 model did include these fields as possible predictors: the Task 6 code creates
+model_features by dropping only Churn and customerID, so gender, SeniorCitizen, Partner,
+and Dependents remain in X_encoded and can affect the predicted churn probability. That
+does not authorize passing their raw values to the LLM. If the full customer row had been
+included in the prompt, the LLM could mention a protected or sensitive attribute directly,
+use it as an unsupported reason for churn, or infer and expose a proxy-based explanation;
+it could then recommend different retention treatment for comparable customers. It would
+also expand the prompt's privacy exposure by sending unrelated fields, increase the chance
+of prompt leakage in logs, and make the explanation impossible to defend as based only on
+approved business factors.
+
+What the code actually did to prevent this leak:
+
+1. It did not pass the full row or the raw dataframe to Gemini.
+2. It converted the model result into only three inputs for the LLM: risk probability,
+	tenure, and a filtered list of top feature names.
+3. Before selecting those names, it excluded any feature containing gender,
+	SeniorCitizen, Partner, or Dependents, case-insensitively.
+4. The system prompt explicitly forbids mentioning those attributes, their proxies, or
+	any implication of them, and instructs the model to use only the retrieved clause and
+	supplied feature names.
+
+Therefore, the model may still have used those fields internally when producing the risk
+score, but the Task 6 explanation prompt does not disclose their values or invite the LLM
+to use them as justification. A stricter production design would also retrain the churn
+model without those fields if policy or fairness requirements prohibit their use even
+inside the predictive model.
+

@@ -1,0 +1,39 @@
+# Task 7: Executive Memo
+
+## CFO headline
+
+"Our 26.54% churn rate is concentrated financially in the New, High-Spend, High-Risk
+segment, where 1,937 customers at 59.37% predicted risk and $83.43 average monthly spend
+represent approximately $95,944 in expected monthly revenue at risk."
+
+## First campaign target and trade-off
+
+Fund the retention campaign for **New, High-Spend, High-Risk** customers first. This segment
+has the highest risk (59.37%) and high average spend ($83.43), so its estimated exposure is
+the largest: $95,944 per month, calculated as 1,937 customers x $83.43 x 0.5937. The trade-off
+is campaign efficiency: **New, Low-Spend, High-Risk** customers also need attention, but their
+lower $37.22 average spend produces only about $15,559 of expected monthly revenue at risk;
+targeting Segment 2 first prioritizes dollars protected rather than risk percentage alone.
+
+## Monitoring signal
+
+Track the **four-week realized churn rate among customers flagged as New, High-Spend,
+High-Risk**, split before and after any price change or new competitor offer; if realized
+churn rises materially above the model's predicted risk or the historical segment baseline,
+the customer behavior has shifted and the model should be retrained with the new pricing and
+competitive context.
+
+## Governance
+
+To prove Clause 4's non-discrimination rule from logs alone, retain an immutable record for
+every explanation containing the customer-field allowlist and forbidden-field scan result,
+prompt hash, output scan result, clause ID/text, model and prompt versions, timestamp, and
+request ID, then audit that every record shows a clean scan and only the approved fields in
+the prompt and output.
+
+## Cost control
+
+Cache the explanation by a versioned, deterministic key made from clause ID, risk band,
+tenure band, and the three approved feature names, and reuse the cached response for matching
+weekly profiles while retaining the clause ID/text and prompt hash as the citation record;
+this reduces duplicate Gemini calls without weakening the retrieval-grounding guarantee.

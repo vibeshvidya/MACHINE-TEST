@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import re
 from pathlib import Path
 from urllib import error, request
 
@@ -60,27 +61,35 @@ def clean_data(df):
 	return df.dropna(subset=['Churn', 'tenure', 'MonthlyCharges']).reset_index(drop=True)
 
 
+PLAYBOOK_CLAUSES = {
+	1: (
+		'For a new high-risk customer, offer a 12- or 24-month contract with '
+		'temporary price protection and schedule a service check-in within 30 days.'
+	),
+	2: (
+		'For an established high-risk customer, offer a loyalty discount tied to '
+		'a longer contract and proactively review the customer\'s current plan.'
+	),
+	3: (
+		'For a new moderate-risk customer, offer an introductory loyalty bundle '
+		'and a follow-up review before the first annual renewal.'
+	),
+	4: (
+		'For an established moderate-risk customer, offer a loyalty add-on bundle '
+		'and review plan value at the next renewal.'
+	),
+}
+
+
 def retrieve_playbook_clause(risk_probability, tenure):
 	"""Select one approved action clause before the LLM is called."""
 	if risk_probability >= 0.5 and tenure < 24:
-		return (
-			'For a new high-risk customer, offer a 12- or 24-month contract with '
-			'temporary price protection and schedule a service check-in within 30 days.'
-		)
+		return 1, PLAYBOOK_CLAUSES[1]
 	if risk_probability >= 0.5:
-		return (
-			'For an established high-risk customer, offer a loyalty discount tied to '
-			'a longer contract and proactively review the customer\'s current plan.'
-		)
+		return 2, PLAYBOOK_CLAUSES[2]
 	if tenure < 24:
-		return (
-			'For a new moderate-risk customer, offer an introductory loyalty bundle '
-			'and a follow-up review before the first annual renewal.'
-		)
-	return (
-		'For an established moderate-risk customer, offer a loyalty add-on bundle '
-		'and review plan value at the next renewal.'
-	)
+		return 3, PLAYBOOK_CLAUSES[3]
+	return 4, PLAYBOOK_CLAUSES[4]
 
 
 def call_llm(system_prompt, user_prompt):
@@ -148,7 +157,9 @@ top_features = [
 
 risk_probability = float(flagged['PredictedChurnProbability'])
 tenure = float(flagged['tenure'])
-retrieved_clause = retrieve_playbook_clause(risk_probability, tenure)
+retrieved_clause_number, retrieved_clause = retrieve_playbook_clause(
+	risk_probability, tenure
+)
 
 system_prompt = (
 	'You are a telecom retention advisor writing for a retention agent. Produce exactly '
@@ -167,15 +178,50 @@ user_prompt = (
 )
 
 exact_output = call_llm(system_prompt, user_prompt)
+
+# Deliberately omit the playbook text to test whether the LLM invents the clause mapping.
+hallucination_system_prompt = (
+	'You are a telecom retention advisor. Given the customer facts below, state which '
+	'numbered clause from the company retention playbook applies. The playbook text is not '
+	'provided. Reply with one clause number and a short explanation. Do not mention or infer '
+	'gender, SeniorCitizen, Partner, Dependents, or any proxy for them.'
+)
+hallucination_user_prompt = (
+	f'Risk probability: {risk_probability:.4f}\n'
+	f'Tenure: {tenure:.0f} months\n'
+	f'Top contributing feature names: {", ".join(top_features)}'
+)
+hallucination_output = call_llm(
+	hallucination_system_prompt,
+	hallucination_user_prompt,
+)
+number_match = re.search(
+	r'\bclause\s*(?:number\s*)?[#:]?\s*(\d+)\b',
+	hallucination_output,
+	re.IGNORECASE,
+)
+hallucinated_clause_number = int(number_match.group(1)) if number_match else None
+clause_number_correct = hallucinated_clause_number == retrieved_clause_number
+
 record = {
 	'customer_id': str(flagged.get('customerID', flagged.name)),
 	'risk_probability': round(risk_probability, 6),
 	'tenure_months': tenure,
 	'top_contributing_features': top_features,
 	'retrieved_clause': retrieved_clause,
+	'retrieved_clause_number': retrieved_clause_number,
 	'system_prompt': system_prompt,
 	'user_prompt': user_prompt,
 	'exact_llm_output': exact_output,
+	'hallucination_test': {
+		'failure_mode': 'ungrounded clause-number hallucination',
+		'system_prompt': hallucination_system_prompt,
+		'user_prompt': hallucination_user_prompt,
+		'exact_llm_output': hallucination_output,
+		'parsed_clause_number': hallucinated_clause_number,
+		'expected_clause_number': retrieved_clause_number,
+		'clause_number_correct': clause_number_correct,
+	},
 }
 output_path = file_path.parent / 'advisory_explanation.json'
 output_path.write_text(json.dumps(record, indent=2), encoding='utf-8')
